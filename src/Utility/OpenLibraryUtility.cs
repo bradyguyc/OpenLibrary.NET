@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace OpenLibraryNET.Utility
 {
@@ -315,12 +316,13 @@ namespace OpenLibraryNET.Utility
         /// <param name="username">The user whose reading logs you want to get.</param>
         /// <param name="path">The path of the Uri. Should be "want-to-read", "currently-reading" or "already-read".</param>
         /// <returns>A MyBooks API Uri.</returns>
-        public static Uri BuildMyBooksUri(string username, string path)
+        public static Uri BuildMyBooksUri(string username, string path, params KeyValuePair<string, string>[] parameters)
         {
             return BuildUri
             (
                 BaseURL,
-                "people/" + username + "/books/" + path + ".json"
+                "people/" + username + "/books/" + path + ".json",
+                parameters
             );
         }
 
@@ -583,6 +585,7 @@ namespace OpenLibraryNET.Utility
                 return JsonConvert.DeserializeObject<T>(response);
             else
             {
+                if (response == "{}") return default;
                 JToken token = JToken.Parse(response);
                 return token[path]!.ToObject<T>();
             }

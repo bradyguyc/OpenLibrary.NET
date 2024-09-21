@@ -17,9 +17,10 @@ namespace OpenLibraryNET.Loader
         /// Attempt to get data about a user's Want-To-Read reading log.
         /// </summary>
         /// <param name="username">The user to get the reading log of. null to use the username of the logged in account.</param>
+        /// <param name="parameters"></param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async Task<(bool, OLMyBooksData?)> TryGetWantToReadAsync(string? username = null)
-            => await TryGetWantToReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<(bool, OLMyBooksData?)> TryGetWantToReadAsync(string? username = null, params KeyValuePair<string, string>[] parameters)
+            => await TryGetWantToReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username , parameters);
         /// <summary>
         /// Get data about a user's Want-To-Read reading log.
         /// </summary>
@@ -29,16 +30,16 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<OLMyBooksData?> GetWantToReadAsync(string? username = null)
-            => await GetWantToReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<OLMyBooksData?> GetWantToReadAsync(string? username = null, params KeyValuePair<string, string>[] parameters)
+            => await GetWantToReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username,parameters);
 
         /// <summary>
         /// Attempt to get data about a user's Currently-Reading reading log.
         /// </summary>
         /// <param name="username">The user to get the reading log of. null to use the username of the logged in account.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async Task<(bool, OLMyBooksData?)> TryGetCurrentlyReadingAsync(string? username = null)
-            => await TryGetCurrentlyReadingAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<(bool, OLMyBooksData?)> TryGetCurrentlyReadingAsync(string? username = null, params KeyValuePair<string, string>[] parameters)
+            => await TryGetCurrentlyReadingAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username, parameters);
         /// <summary>
         /// Get data about a user's Currently-Reading reading log.
         /// </summary>
@@ -48,16 +49,16 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<OLMyBooksData?> GetCurrentlyReadingAsync(string? username = null)
-            => await GetCurrentlyReadingAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<OLMyBooksData?> GetCurrentlyReadingAsync(string? username = null, params KeyValuePair<string, string>[] parameters)
+            => await GetCurrentlyReadingAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username, parameters);
 
         /// <summary>
         /// Attempt to get data about a user's Already-Read reading log.
         /// </summary>
         /// <param name="username">The user to get the reading log of. null to use the username of the logged in account.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async Task<(bool, OLMyBooksData?)> TryGetAlreadyReadAsync(string? username = null)
-            => await TryGetAlreadyReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<(bool, OLMyBooksData?)> TryGetAlreadyReadAsync(string? username = null, params KeyValuePair<string, string>[] parameters)
+            => await TryGetAlreadyReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username, parameters  );
         /// <summary>
         /// Get data about a user's Already-Read reading log.
         /// </summary>
@@ -67,8 +68,8 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async Task<OLMyBooksData?> GetAlreadyReadAsync(string? username = null)
-            => await GetAlreadyReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username);
+        public async Task<OLMyBooksData?> GetAlreadyReadAsync(string? username = null, params KeyValuePair<string, string>[] parameters )
+            => await GetAlreadyReadAsync(_client.BackingClient, username == null ? _client.Username?.ToLower()! : username,parameters);
 
         /// <summary>
         /// Attempt to get data about a user's specified reading log.
@@ -131,9 +132,9 @@ namespace OpenLibraryNET.Loader
         /// <param name="client">An HttpClient instance which will be used to make the request.</param>
         /// <param name="username">The user to get the reading log of.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async static Task<(bool, OLMyBooksData?)> TryGetWantToReadAsync(HttpClient client, string username)
+        public async static Task<(bool, OLMyBooksData?)> TryGetWantToReadAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
-            try { return (true, await GetWantToReadAsync(client, username)); }
+            try { return (true, await GetWantToReadAsync(client, username, parameters)); }
             catch { return (false, null); }
         }
 
@@ -147,12 +148,12 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async static Task<OLMyBooksData?> GetWantToReadAsync(HttpClient client, string username)
+        public async static Task<OLMyBooksData?> GetWantToReadAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
             return await OpenLibraryUtility.LoadAsync<OLMyBooksData?>
             (
                 client,
-                OpenLibraryUtility.BuildMyBooksUri(username, "want-to-read")
+                OpenLibraryUtility.BuildMyBooksUri(username, "want-to-read",parameters)
             );
         }
 
@@ -162,9 +163,9 @@ namespace OpenLibraryNET.Loader
         /// <param name="client">An HttpClient instance which will be used to make the request.</param>
         /// <param name="username">The user to get the reading log of.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async static Task<(bool, OLMyBooksData?)> TryGetCurrentlyReadingAsync(HttpClient client, string username)
+        public async static Task<(bool, OLMyBooksData?)> TryGetCurrentlyReadingAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
-            try { return (true, await GetCurrentlyReadingAsync(client, username)); }
+            try { return (true, await GetCurrentlyReadingAsync(client, username,parameters)); }
             catch { return (false, null); }
         }
 
@@ -178,12 +179,12 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async static Task<OLMyBooksData?> GetCurrentlyReadingAsync(HttpClient client, string username)
+        public async static Task<OLMyBooksData?> GetCurrentlyReadingAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
             return await OpenLibraryUtility.LoadAsync<OLMyBooksData?>
             (
                 client,
-                OpenLibraryUtility.BuildMyBooksUri(username, "currently-reading")
+                OpenLibraryUtility.BuildMyBooksUri(username, "currently-reading",parameters)
             );
         }
 
@@ -193,9 +194,9 @@ namespace OpenLibraryNET.Loader
         /// <param name="client">An HttpClient instance which will be used to make the request.</param>
         /// <param name="username">The user to get the reading log of.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public async static Task<(bool, OLMyBooksData?)> TryGetAlreadyReadAsync(HttpClient client, string username)
+        public async static Task<(bool, OLMyBooksData?)> TryGetAlreadyReadAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
-            try { return (true, await GetAlreadyReadAsync(client, username)); }
+            try { return (true, await GetAlreadyReadAsync(client, username, parameters)); }
             catch { return (false, null); }
         }
 
@@ -209,12 +210,12 @@ namespace OpenLibraryNET.Loader
         /// <exception cref="System.Net.Http.HttpRequestException"></exception>
         /// <exception cref="System.Threading.Tasks.TaskCanceledException"></exception>
         /// <exception cref="System.ArgumentNullException"></exception>
-        public async static Task<OLMyBooksData?> GetAlreadyReadAsync(HttpClient client, string username)
+        public async static Task<OLMyBooksData?> GetAlreadyReadAsync(HttpClient client, string username, params KeyValuePair<string, string>[] parameters)
         {
             return await OpenLibraryUtility.LoadAsync<OLMyBooksData?>
             (
                 client,
-                OpenLibraryUtility.BuildMyBooksUri(username, "already-read")
+                OpenLibraryUtility.BuildMyBooksUri(username, "already-read", parameters)
             );
         }
 
