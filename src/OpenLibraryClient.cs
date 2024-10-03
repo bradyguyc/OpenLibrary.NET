@@ -1,4 +1,5 @@
-﻿using System.Formats.Asn1;
+﻿using System;
+using System.Formats.Asn1;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
@@ -10,6 +11,9 @@ using OpenLibraryNET.Utility;
 
 namespace OpenLibraryNET
 {
+
+
+
     /// <summary>
     /// The main interface to OpenLibrary.<br/>
     /// Instantiates HttpClient internally, as OpenLibraryClient uses cookies.<br/>
@@ -17,6 +21,9 @@ namespace OpenLibraryNET
     /// </summary>
     public class OpenLibraryClient : IOpenLibraryClient
     {
+
+
+
         ///<inheritdoc/>
         public bool LoggedIn => _httpHandler.CookieContainer.GetCookies(OpenLibraryUtility.BaseUri).SingleOrDefault(cookie => cookie.Name == "session") != null;
         ///<inheritdoc/>
@@ -46,15 +53,46 @@ namespace OpenLibraryNET
         ///<inheritdoc/>
         public HttpClient BackingClient => _httpClient;
 
+        private class OperationKeyHandler : DelegatingHandler
+        {
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                ResilienceContext context = ResilienceContextPool.Shared.Get(cancellationToken);
+                string uri = request.RequestUri.ToString();
+                ResilienceContextExtensions.SetRequestMetadata(context, new RequestMetadata("OperationKey", uri, "Additional information if needed"));
+                return await base.SendAsync(request, cancellationToken);
+            }
+        }
+
+        private const string httpClientName = "OpenLibraryNET.OpenLibraryClient";
+
+        private readonly CookieContainer? _cookieContainer = new CookieContainer();
+
+        private readonly IHttpClientFactory _httpClientFactory;
+
         /// <summary>
         /// Create a new instance of the OpenLibraryClient.<br/>
         /// Instantiates HttpClient internally, as OpenLibraryClient uses cookies.<br/>
         /// To reuse the backing HttpClient, reuse the OpenLibrary instance.
         /// </summary>
-        public OpenLibraryClient()
+        public OpenLibraryClient(Action<HttpStandardResilienceOptions>? configureOptions = null, Action<ILoggingBuilder>? logBuilder = null)
         {
-            _httpHandler = new HttpClientHandler() { AllowAutoRedirect = true, UseCookies = true };
-            _httpClient = new HttpClient(_httpHandler);
+            ServiceCollection services = new ServiceCollection();
+            _httpHandler = new HttpClientHandler
+            {
+                AllowAutoRedirect = true,
+                UseCookies = true,
+                CookieContainer = _cookieContainer
+            };
+            services.AddHttpClient(httpClientName).ConfigurePrimaryHttpMessageHandler(() => _httpHandler).AddHttpMessageHandler<OperationKeyHandler>()
+                .AddStandardResilienceHandler(configureOptions);
+            if (logBuilder != null)
+            {
+                services.AddLogging(logBuilder);
+            }
+            ServiceProvider provider = services.BuildServiceProvider();
+            _httpClientFactory = provider.GetService<IHttpClientFactory>();
+            _httpClient = _httpClientFactory.CreateClient(httpClientName);// +"-standard");
 
             _work = new OLWorkLoader(_httpClient);
             _author = new OLAuthorLoader(_httpClient);
